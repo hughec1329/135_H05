@@ -1,0 +1,81 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{hyperref}
+\title{STA135 - HW05 - Boosting and Bagging}
+\author{Hugh Crockford}
+\date{\today}
+\begin{document}
+	\maketitle
+
+	\section{Random Forest}
+		Random forest was grown on training data and error examined, see below for confusion matrix. 
+		\input{confRF.tex}
+
+		When the confusion for each class is compared to Out of Bag error rate, the following graph is generated showing oob error is greater than the error for some digits, and less for others. The mean of clas error is 6.5\%, which is very close to OOB rate of 6.44\%
+
+			\begin{figure}[H]
+				\centering
+				\includegraphics[scale=0.5]{err.jpg}
+				\caption{Summary of Accuracy for each digit vs overall OOB error rate(red)}
+			\end{figure}
+	\section{Importance}
+		The importance of each pixel sorted by importance can be seen in following plot:
+		The plot shows the first 50 most important pixels are responsible for 32\% of the change in gine, and the first 100 were 52\%
+			\begin{figure}[H]
+				\centering
+				\includegraphics[scale=0.5]{relplot.jpg}
+				\caption{Importance of each pixel}
+			\end{figure}
+
+		A heatmap showing pixels colored by importance can be seen below.
+		Although it is fairly homogenous some interesting things can be seen:
+		\begin{enumerate}
+			\item most of the inmportant pixels are in top part of the image.
+			\item specifically the top 4 are arranged around what would be considered the upper circle of digits 3,8,9, but would also be an important part of digits 2,3,5,6, and 7. This makes intuitive sense that the intensity of these pixels would predict the digit well.
+			\item Likewise there is a band down left and bottom of image, corresponding to parts of 1,2,4,6,8 and 0.
+		\end{enumerate}
+			\begin{figure}[H]
+				\centering
+				\includegraphics[scale=0.5]{imp.jpg}
+				\caption{Importance of each pixel shown on heatmap.}
+			\end{figure}
+
+		\subsection{Timing - speeding up RF}
+		I was interested in the effect of only using these important pixels and growing same, or more trees on the accuracy of prediction.
+
+
+		OOB rates on first 50 most important pixels with 30 trees was 22\% in only 7 seconds, a considerable jump from the 6.4\% with all pixels, although this initial model took 2202 seconds.
+		Using the first 100 most important pixels with 30 trees the OOB was 15\% and it took 12 seconds
+
+		When I increased number of trees to default 500, the first 50 yielded 18.14\% OOB in 116 seconds, while the first 100 yielded 11\% OOB and took 205 seconds.
+
+
+		It seems from this brief investigation into time vs accuracy tradeoff that using a subset of initial inputs with few trees produces a fast result, that retains much of the accuracy of the full model ( It should be noted, however, that for this dataset QDA performed just as well as RF w 30 trees, in a fraction of the time.
+
+		\section{Testdata}
+		Using the test data, the accuracy was similar to the crossvalidated training set.
+		\input{conftestRF.tex}
+
+		To compare the accuracy on test vs training set, I took a ratio of test/train, figuring if they were similar al values should be around 1.
+		\input{confcomp.tex}
+
+		This was difficult to interpret so I represented as an image, with yellow representing values around 1, and red those that are well below 1.
+
+			\begin{figure}[H]
+				\centering
+				\includegraphics[scale=0.5]{confimg.jpg}
+				\caption{Heatmap of confusion matricies ratio}
+			\end{figure}
+
+		From this image it can be seen the training set was more accurate on 5-8 vs 2-4, and the test set struggled with 4-6 vs 8-10.
+
+		\section{Boosting}
+
+
+			
+\newpage
+	\section{CODE}
+		\lstinputlisting[breaklines=TRUE]{H05.R}
+\end{document}
